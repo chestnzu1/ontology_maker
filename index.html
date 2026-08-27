@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Ontology Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --success: #16a34a;
+            --bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --hover: #f1f5f9;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a;
+                --text: #e2e8f0;
+                --border: #334155;
+                --hover: #1e293b;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 350px;
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--hover);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: var(--secondary);
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .tree-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        .export-panel {
+            width: 300px;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid var(--border);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .parent-suggestions {
+            font-size: 13px;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 8px;
+        }
+
+        .suggestion-item {
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: var(--hover);
+        }
+
+        .suggestion-item.selected {
+            background: rgba(37, 99, 235, 0.2);
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .class-item {
+            margin: 15px 0;
+            padding: 12px;
+            border-left: 4px solid var(--primary);
+            background: var(--hover);
+            border-radius: 4px;
+        }
+
+        .class-name {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .class-parent {
+            font-size: 12px;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .class-description {
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .class-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .class-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .tree {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--secondary);
+        }
+
+        .tree-node {
+            margin-left: 20px;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .export-btn:hover {
+            background: #15803d;
+        }
+
+        .turtle-output {
+            background: var(--hover);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--secondary);
+            padding: 40px 20px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2 style="margin-bottom: 20px; font-size: 18px;">Add Class</h2>
+
+            <div class="form-group">
+                <label>Class Name</label>
+                <input type="text" id="className" placeholder="e.g., BankAccount">
+            </div>
+
+            <div class="form-group">
+                <label>Namespace URI</label>
+                <input type="text" id="namespace" placeholder="e.g., http://example.com/finance#" value="http://example.com/finance#">
+            </div>
+
+            <div class="form-group">
+                <label>Parent Class</label>
+                <div class="parent-suggestions" id="parentSuggestions"></div>
+                <input type="text" id="selectedParent" placeholder="Selected parent class" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="description" placeholder="Describe this class..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="addClass()">Add Class</button>
+                <button class="btn-secondary" onclick="clearForm()">Clear</button>
+            </div>
+
+            <h3 style="margin-top: 30px;">Classes Added</h3>
+            <div id="classList"></div>
+        </div>
+
+        <!-- Main Area -->
+        <div class="main">
+            <div class="header">
+                <h1>Financial Ontology Builder</h1>
+                <p>Build your financial domain ontology with intelligent parent class suggestions</p>
+            </div>
+
+            <div class="content">
+                <!-- Tree View -->
+                <div class="tree-area">
+                    <h3>Hierarchy Visualization</h3>
+                    <div class="tree" id="treeView"></div>
+                </div>
+
+                <!-- Export Panel -->
+                <div class="export-panel">
+                    <h3>Export</h3>
+                    <button class="export-btn" onclick="exportTurtle()">Generate Turtle</button>
+
+                    <h3 style="margin-top: 20px;">Preview</h3>
+                    <div class="turtle-output" id="turtleOutput"></div>
+                    <button class="copy-btn" onclick="copyToClipboard()">Copy Turtle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Financial Ontology Reference Classes
+        const financialOntologyRefs = {
+            'Thing': { uri: 'http://www.w3.org/2002/07/owl#Thing', description: 'Top-level class' },
+            'Entity': { uri: 'http://purl.org/onto/fibo/core/ontology/FIBO-CORE', description: 'Base entity in financial domain' },
+            'Party': { uri: 'http://purl.org/onto/fibo/core/party/Party', description: 'Person or organization' },
+            'Financial Instrument': { uri: 'http://purl.org/onto/fibo/core/sec/Instrument', description: 'Tradable financial product' },
+            'Asset': { uri: 'http://purl.org/onto/fibo/core/asset/Asset', description: 'Anything of value' },
+            'Liability': { uri: 'http://purl.org/onto/fibo/core/liability/Liability', description: 'Financial obligation' },
+            'Product': { uri: 'http://purl.org/onto/fibo/core/prod/Product', description: 'Financial product' },
+            'Account': { uri: 'http://purl.org/onto/fibo/core/account/Account', description: 'Financial account' },
+            'Transaction': { uri: 'http://purl.org/onto/fibo/core/transaction/Transaction', description: 'Financial exchange' },
+            'Agreement': { uri: 'http://purl.org/onto/fibo/core/agreement/Agreement', description: 'Formal contract' },
+            'Security': { uri: 'http://purl.org/onto/fibo/core/sec/Security', description: 'Negotiable instrument' },
+            'Derivative': { uri: 'http://purl.org/onto/fibo/core/deriv/Derivative', description: 'Derivative instrument' },
+            'Equity': { uri: 'http://purl.org/onto/fibo/core/equity/Equity', description: 'Ownership stake' },
+            'Debt': { uri: 'http://purl.org/onto/fibo/core/debt/Debt', description: 'Borrowed funds' },
+            'Currency': { uri: 'http://purl.org/onto/fibo/core/currency/Currency', description: 'Money of account' },
+            'Price': { uri: 'http://purl.org/onto/fibo/core/price/Price', description: 'Monetary value' },
+            'Portfolio': { uri: 'http://purl.org/onto/fibo/core/portfolio/Portfolio', description: 'Collection of assets' },
+            'Counterparty': { uri: 'http://purl.org/onto/fibo/core/party/Counterparty', description: 'Other party in transaction' },
+            'Organization': { uri: 'http://purl.org/onto/fibo/core/org/Organization', description: 'Corporate entity' },
+            'Person': { uri: 'http://purl.org/onto/fibo/core/person/Person', description: 'Individual person' }
+        };
+
+        let ontology = [];
+        let currentTurtleOutput = '';
+
+        function getParentSuggestions(input) {
+            if (!input) {
+                updateParentSuggestions(Object.keys(financialOntologyRefs));
+                return;
+            }
+            const suggestions = Object.keys(financialOntologyRefs).filter(key =>
+                key.toLowerCase().includes(input.toLowerCase())
+            );
+            updateParentSuggestions(suggestions);
+        }
+
+        function updateParentSuggestions(suggestions) {
+            const container = document.getElementById('parentSuggestions');
+            container.innerHTML = suggestions.map((s, i) => `
+                <div class="suggestion-item" onclick="selectParent('${s}', this)">
+                    <strong>${s}</strong>
+                    <div style="font-size: 11px; color: var(--secondary); margin-top: 3px;">
+                        ${financialOntologyRefs[s].description}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectParent(parentName, element) {
+            document.querySelectorAll('.suggestion-item').forEach(e => e.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedParent').value = parentName;
+        }
+
+        document.getElementById('selectedParent').addEventListener('click', function() {
+            getParentSuggestions('');
+        });
+
+        // Initialize suggestions on page load
+        getParentSuggestions('');
+
+        function addClass() {
+            const className = document.getElementById('className').value.trim();
+            const namespace = document.getElementById('namespace').value.trim();
+            const parentClass = document.getElementById('selectedParent').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            if (!className) {
+                alert('Please enter a class name');
+                return;
+            }
+
+            if (!parentClass) {
+                alert('Please select a parent class');
+                return;
+            }
+
+            const classObject = {
+                id: Date.now(),
+                name: className,
+                namespace: namespace,
+                parent: parentClass,
+                description: description,
+                uri: namespace + className
+            };
+
+            ontology.push(classObject);
+            renderClassList();
+            renderTree();
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('className').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('selectedParent').value = '';
+            document.querySelectorAll('.suggestion-item').forEach(e => e.classList.remove('selected'));
+        }
+
+        function deleteClass(id) {
+            ontology = ontology.filter(c => c.id !== id);
+            renderClassList();
+            renderTree();
+        }
+
+        function renderClassList() {
+            const list = document.getElementById('classList');
+            if (ontology.length === 0) {
+                list.innerHTML = '<p style="color: var(--secondary); font-size: 13px;">No classes added yet</p>';
+                return;
+            }
+
+            list.innerHTML = ontology.map(cls => `
+                <div class="class-item">
+                    <div class="class-name">${cls.name}</div>
+                    <div class="class-parent">Parent: ${cls.parent}</div>
+                    ${cls.description ? `<div class="class-description">${cls.description}</div>` : ''}
+                    <div class="class-actions">
+                        <button class="btn-secondary" style="padding: 5px;" onclick="deleteClass(${cls.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTree() {
+            const treeView = document.getElementById('treeView');
+
+            if (ontology.length === 0) {
+                treeView.innerHTML = '<p class="empty-state"><p>Add classes to see hierarchy</p></p>';
+                return;
+            }
+
+            let treeHtml = 'Thing\n';
+            const roots = {};
+
+            // Group by parent
+            ontology.forEach(cls => {
+                if (!roots[cls.parent]) {
+                    roots[cls.parent] = [];
+                }
+                roots[cls.parent].push(cls);
+            });
+
+            // Render tree
+            Object.keys(roots).forEach(parent => {
+                treeHtml += `└─ ${parent}\n`;
+                roots[parent].forEach((cls, idx) => {
+                    const isLast = idx === roots[parent].length - 1;
+                    treeHtml += `   ${isLast ? '└─' : '├─'} ${cls.name}\n`;
+                });
+            });
+
+            treeView.innerHTML = `<pre>${treeHtml}</pre>`;
+        }
+
+        function exportTurtle() {
+            let turtle = '@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n';
+            turtle += '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n';
+            turtle += '@prefix owl: <http://www.w3.org/2002/07/owl#> .\n';
+            turtle += '@prefix fibo: <http://purl.org/onto/fibo/> .\n\n';
+
+            // Add namespace declaration
+            const namespace = document.getElementById('namespace').value.trim() || 'http://example.com/finance#';
+            turtle += `@prefix fin: <${namespace}> .\n\n`;
+
+            // Add class definitions
+            ontology.forEach(cls => {
+                turtle += `fin:${cls.name} a owl:Class ;\n`;
+                turtle += `    rdfs:label "${cls.name}" ;\n`;
+
+                const parentRef = financialOntologyRefs[cls.parent];
+                if (parentRef) {
+                    turtle += `    rdfs:subClassOf <${parentRef.uri}> ;\n`;
+                } else {
+                    turtle += `    rdfs:subClassOf fin:${cls.parent} ;\n`;
+                }
+
+                if (cls.description) {
+                    turtle += `    rdfs:comment "${cls.description}" ;\n`;
+                }
+
+                turtle += `    rdfs:isDefinedBy <${namespace}> .\n\n`;
+            });
+
+            currentTurtleOutput = turtle;
+            document.getElementById('turtleOutput').textContent = turtle;
+        }
+
+        function copyToClipboard() {
+            if (!currentTurtleOutput) {
+                alert('Please export Turtle first');
+                return;
+            }
+            navigator.clipboard.writeText(currentTurtleOutput).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        // Initialize
+        renderClassList();
+        renderTree();
+    </script>
+</body>
+</html>
