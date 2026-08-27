@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ReferenceOntology {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  uri         String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("reference_ontologies")
+}
+
+model OntologyClass {
+  id          String   @id @default(cuid())
+  name        String
+  namespace   String
+  parentClass String
+  description String?
+  ontologyId  String
+  ontology    Ontology @relation(fields: [ontologyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([ontologyId, name])
+  @@map("ontology_classes")
+}
+
+model Ontology {
+  id          String            @id @default(cuid())
+  name        String
+  namespace   String
+  description String?
+  classes     OntologyClass[]
+  turtleData  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("ontologies")
+}

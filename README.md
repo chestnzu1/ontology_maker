@@ -1,51 +1,161 @@
 # Financial Ontology Builder
 
-A web-based tool for building financial domain ontologies in Turtle (RDF) format with intelligent parent class suggestions from established financial ontologies.
+A modern web application for building and managing financial domain ontologies in Turtle (RDF) format. Built with Next.js, TypeScript, and SQLite.
 
 ## Features
 
-- **Interactive UI** to add and manage ontology classes
-- **Curated parent class suggestions** from FIBO (Financial Industry Business Ontology) and other standards
-- **Hierarchy visualization** showing class relationships
-- **Turtle format export** ready for semantic web applications
-- **Dark/Light mode support** 
+- **Interactive Ontology Editor** - Create and manage ontologies with an intuitive UI
+- **Reference Ontology Management** - Pre-load and customize reference ontologies (like FIBO)
+- **Class Hierarchy** - Define classes and their parent relationships
+- **Turtle Export** - Generate standard Turtle format ontologies
+- **File Downloads** - Export ontologies as `.ttl` files
+- **Persistent Storage** - SQLite database to save your work
+- **Clean API** - RESTful API for ontology and reference data management
 
-## Quick Start
+## Tech Stack
 
-1. Open `index.html` in your browser
-2. Enter a class name (e.g., "BankAccount")
-3. Select a parent class from the suggested financial ontology references
-4. Add a description
-5. Click "Add Class"
-6. Generate and export Turtle format ontology
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: SQLite with Prisma ORM
+- **Styling**: Tailwind CSS with dark theme
 
-## Included Reference Classes
+## Getting Started
 
-The tool comes with 20 pre-defined financial ontology reference classes:
-- Thing, Entity, Party, Financial Instrument
-- Asset, Liability, Product, Account
-- Transaction, Agreement, Security, Derivative
-- Equity, Debt, Currency, Price
-- Portfolio, Counterparty, Organization, Person
+### Prerequisites
 
-## Use Cases
+- Node.js 18+ and npm/yarn
+- Git
 
-- Building semantic layers for financial applications
-- Creating domain-specific financial ontologies
-- Organizing financial data hierarchies
-- Generating RDF/OWL ontologies for knowledge graphs
+### Installation
 
-## Running Locally
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd ontology_maker
+```
 
-Simply open `index.html` in a modern web browser. No server or dependencies required.
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Export Format
+3. Set up the database:
+```bash
+cp .env.example .env
+npx prisma migrate dev
+```
 
-The tool generates valid Turtle (TTL) format ontologies with:
-- RDF and OWL prefix declarations
-- Class definitions with labels and comments
-- Subclass relationships to parent ontologies
-- Namespace URIs for your domain
+4. Start the development server:
+```bash
+npm run dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Project Structure
+
+```
+ontology_maker/
+├── app/
+│   ├── api/                 # API routes
+│   │   ├── ontologies/      # Ontology CRUD operations
+│   │   └── reference-ontologies/  # Reference ontology management
+│   ├── layout.tsx          # Root layout
+│   ├── page.tsx            # Main page
+│   └── globals.css         # Global styles
+├── components/             # React components
+│   ├── OntologyBuilder.tsx # Main app component
+│   ├── OntologyEditor.tsx  # Editor for ontologies
+│   ├── ClassForm.tsx       # Form to add classes
+│   ├── ClassList.tsx       # Display classes
+│   ├── TurtleExport.tsx    # Export to Turtle format
+│   ├── OntologyList.tsx    # List saved ontologies
+│   └── ReferenceOntologyManager.tsx  # Manage reference ontologies
+├── prisma/
+│   └── schema.prisma       # Database schema
+├── package.json
+├── tsconfig.json
+├── tailwind.config.ts
+└── next.config.js
+```
+
+## API Endpoints
+
+### Reference Ontologies
+- `GET /api/reference-ontologies` - List all reference ontologies
+- `POST /api/reference-ontologies` - Create a new reference ontology
+- `PUT /api/reference-ontologies/[id]` - Update a reference ontology
+- `DELETE /api/reference-ontologies/[id]` - Delete a reference ontology
+
+### Ontologies
+- `GET /api/ontologies` - List all ontologies
+- `POST /api/ontologies` - Create a new ontology
+- `GET /api/ontologies/[id]` - Get ontology details
+- `PUT /api/ontologies/[id]` - Update an ontology
+- `DELETE /api/ontologies/[id]` - Delete an ontology
+
+### Ontology Classes
+- `POST /api/ontologies/[id]/classes` - Add a class to an ontology
+- `DELETE /api/ontologies/[id]/classes/[classId]` - Delete a class
+
+## Database Schema
+
+### ReferenceOntology
+- `id`: Unique identifier
+- `name`: Name of the reference ontology
+- `uri`: URI of the ontology
+- `description`: Description of the reference ontology
+- `createdAt`, `updatedAt`: Timestamps
+
+### Ontology
+- `id`: Unique identifier
+- `name`: Name of the ontology
+- `namespace`: Namespace URI
+- `description`: Optional description
+- `turtleData`: Generated Turtle format data
+- `createdAt`, `updatedAt`: Timestamps
+
+### OntologyClass
+- `id`: Unique identifier
+- `name`: Class name
+- `namespace`: Namespace URI
+- `parentClass`: Parent class name
+- `description`: Optional description
+- `ontologyId`: Foreign key to Ontology
+- `createdAt`, `updatedAt`: Timestamps
+
+## Building for Production
+
+```bash
+npm run build
+npm run start
+```
+
+## Environment Variables
+
+Create a `.env.local` file based on `.env.example`:
+
+```env
+# Database URL
+DATABASE_URL="file:./dev.db"
+
+# Next.js public API URL
+NEXT_PUBLIC_API_URL="http://localhost:3000"
+```
+
+For production, use a cloud database like PostgreSQL or MongoDB.
+
+## Integration with Personal Website
+
+To integrate this app into your personal website:
+
+1. Deploy this as a standalone Next.js app
+2. Add a link on your personal website pointing to this app
+3. The app will be accessible at your deployment URL
+
+## Contributing
+
+This is a personal project. Feel free to fork and customize for your needs.
 
 ## License
 
