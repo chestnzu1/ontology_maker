@@ -150,7 +150,7 @@ export function OntologyEditor({
       {ontology ? (
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Editor */}
-          <div className="flex-1 flex flex-col overflow-hidden border-r border-slate-700">
+          <div className="w-96 flex flex-col overflow-hidden border-r border-slate-700">
             <div className="flex-1 overflow-auto p-6">
               <ClassForm onAddClass={handleAddClass} existingClasses={ontology.classes} />
               <div className="mt-8">
@@ -163,7 +163,9 @@ export function OntologyEditor({
           </div>
 
           {/* Right Panel - Graph Visualization */}
-          <OntologyGraph ontology={ontology} />
+          <div className="flex-1 overflow-hidden">
+            <OntologyGraph ontology={ontology} />
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-slate-400">
