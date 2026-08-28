@@ -1,15 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-
-interface ReferenceOntology {
-  id: string
-  name: string
-  uri: string
-  description: string
-}
+import { useState } from 'react'
+import type { OntologyClass } from '@/lib/storage'
 
 interface ClassFormProps {
+  existingClasses?: OntologyClass[]
   onAddClass: (classData: {
     name: string
     parentClass: string
@@ -17,67 +12,27 @@ interface ClassFormProps {
   }) => void
 }
 
-export function ClassForm({ onAddClass }: ClassFormProps) {
+export function ClassForm({ existingClasses = [], onAddClass }: ClassFormProps) {
   const [className, setClassName] = useState('')
-  const [parentClass, setParentClass] = useState('')
+  const [parentClassId, setParentClassId] = useState('')
   const [description, setDescription] = useState('')
-  const [references, setReferences] = useState<ReferenceOntology[]>([])
-  const [filteredReferences, setFilteredReferences] = useState<ReferenceOntology[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    loadReferences()
-  }, [])
-
-  const loadReferences = async () => {
-    try {
-      const res = await fetch('/api/reference-ontologies')
-      if (res.ok) {
-        const data = await res.json()
-        setReferences(data)
-        setFilteredReferences(data)
-      }
-    } catch (error) {
-      console.error('Failed to load reference ontologies:', error)
-    }
-  }
-
-  const handleParentChange = (value: string) => {
-    setParentClass(value)
-    if (value) {
-      const filtered = references.filter((ref) =>
-        ref.name.toLowerCase().includes(value.toLowerCase())
-      )
-      setFilteredReferences(filtered)
-      setShowSuggestions(true)
-    } else {
-      setFilteredReferences(references)
-      setShowSuggestions(false)
-    }
-  }
-
-  const handleSelectReference = (ref: ReferenceOntology) => {
-    setParentClass(ref.name)
-    setShowSuggestions(false)
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!className || !parentClass) {
-      alert('Class name and parent class are required')
+    if (!className) {
+      alert('Class name is required')
       return
     }
 
     onAddClass({
       name: className,
-      parentClass,
+      parentClass: parentClassId || '',
       description,
     })
 
     setClassName('')
-    setParentClass('')
+    setParentClassId('')
     setDescription('')
   }
 
@@ -97,32 +52,20 @@ export function ClassForm({ onAddClass }: ClassFormProps) {
           />
         </div>
 
-        <div className="relative">
-          <label className="block text-sm font-medium mb-2">Parent Class</label>
-          <input
-            type="text"
-            value={parentClass}
-            onChange={(e) => handleParentChange(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
+        <div>
+          <label className="block text-sm font-medium mb-2">Parent Class (Optional)</label>
+          <select
+            value={parentClassId}
+            onChange={(e) => setParentClassId(e.target.value)}
             className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-            placeholder="Select or type..."
-          />
-
-          {showSuggestions && filteredReferences.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-slate-600 border border-slate-500 rounded-lg overflow-hidden z-10 max-h-48 overflow-y-auto">
-              {filteredReferences.map((ref) => (
-                <button
-                  key={ref.id}
-                  type="button"
-                  onClick={() => handleSelectReference(ref)}
-                  className="w-full px-3 py-2 text-left hover:bg-slate-500 transition-colors border-b border-slate-500 last:border-b-0"
-                >
-                  <div className="font-medium">{ref.name}</div>
-                  <div className="text-xs text-slate-300">{ref.description}</div>
-                </button>
-              ))}
-            </div>
-          )}
+          >
+            <option value="">None (Root Class)</option>
+            {existingClasses.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

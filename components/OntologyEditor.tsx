@@ -149,7 +149,7 @@ export function OntologyEditor({
 
         {ontology && (
           <div className="flex-1 overflow-auto p-6">
-            <ClassForm onAddClass={handleAddClass} />
+            <ClassForm onAddClass={handleAddClass} existingClasses={ontology.classes} />
             <div className="mt-8">
               <ClassList
                 classes={ontology.classes}

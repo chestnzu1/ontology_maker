@@ -1,4 +1,4 @@
-interface OntologyClass {
+export interface OntologyClass {
   id: string
   name: string
   namespace: string
