@@ -1,20 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-interface OntologyClass {
-  id: string
-  name: string
-}
-
-interface Ontology {
-  id: string
-  name: string
-  namespace: string
-  description?: string
-  classes: OntologyClass[]
-  createdAt: string
-}
+import { getAllOntologies, deleteOntology, type Ontology } from '@/lib/storage'
 
 interface OntologyListProps {
   onSelectOntology: (id: string) => void
@@ -28,30 +15,19 @@ export function OntologyList({ onSelectOntology }: OntologyListProps) {
     loadOntologies()
   }, [])
 
-  const loadOntologies = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch('/api/ontologies')
-      if (res.ok) {
-        const data = await res.json()
-        setOntologies(data)
-      }
-    } catch (error) {
-      console.error('Failed to load ontologies:', error)
-    } finally {
-      setLoading(false)
-    }
+  const loadOntologies = () => {
+    setLoading(true)
+    const data = getAllOntologies()
+    setOntologies(data)
+    setLoading(false)
   }
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = (id: string, name: string) => {
     if (!confirm(`Delete ontology "${name}"?`)) return
 
-    try {
-      const res = await fetch(`/api/ontologies/${id}`, { method: 'DELETE' })
-      if (res.ok) {
-        setOntologies(ontologies.filter((o) => o.id !== id))
-      }
-    } catch (error) {
+    if (deleteOntology(id)) {
+      setOntologies(ontologies.filter((o) => o.id !== id))
+    } else {
       alert('Failed to delete ontology')
     }
   }
@@ -94,7 +70,11 @@ export function OntologyList({ onSelectOntology }: OntologyListProps) {
                 <div className="flex gap-4 text-xs text-slate-400">
                   <span>{onto.classes.length} classes</span>
                   <span>
-                    {new Date(onto.createdAt).toLocaleDateString()}
+                    {new Date(onto.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
               </div>

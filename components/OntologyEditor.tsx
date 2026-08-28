@@ -4,22 +4,13 @@ import { useState, useEffect } from 'react'
 import { ClassForm } from './ClassForm'
 import { ClassList } from './ClassList'
 import { TurtleExport } from './TurtleExport'
-
-interface OntologyClass {
-  id: string
-  name: string
-  namespace: string
-  parentClass: string
-  description?: string
-}
-
-interface Ontology {
-  id: string
-  name: string
-  namespace: string
-  description?: string
-  classes: OntologyClass[]
-}
+import {
+  saveOntology,
+  getOntology,
+  addClassToOntology,
+  deleteClassFromOntology,
+  type Ontology,
+} from '@/lib/storage'
 
 export function OntologyEditor({
   ontologyId,
@@ -40,57 +31,36 @@ export function OntologyEditor({
     }
   }, [ontologyId])
 
-  const loadOntology = async () => {
+  const loadOntology = () => {
     if (!ontologyId) return
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/ontologies/${ontologyId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setOntology(data)
-        setName(data.name)
-        setNamespace(data.namespace)
-        setDescription(data.description || '')
-      }
-    } catch (error) {
-      console.error('Failed to load ontology:', error)
-    } finally {
-      setLoading(false)
+    setLoading(true)
+    const data = getOntology(ontologyId)
+    if (data) {
+      setOntology(data)
+      setName(data.name)
+      setNamespace(data.namespace)
+      setDescription(data.description || '')
     }
+    setLoading(false)
   }
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!name || !namespace) {
       alert('Name and namespace are required')
       return
     }
 
-    try {
-      const url = ontology ? `/api/ontologies/${ontology.id}` : '/api/ontologies'
-      const method = ontology ? 'PUT' : 'POST'
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          namespace,
-          description,
-        }),
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        setOntology(data)
-        onOntologySelect(data.id)
-        alert('Ontology saved successfully!')
-      }
-    } catch (error) {
-      alert('Failed to save ontology')
-    }
+    const data = saveOntology(
+      ontology
+        ? { ...ontology, name, namespace, description }
+        : { name, namespace, description, classes: [] }
+    )
+    setOntology(data)
+    onOntologySelect(data.id)
+    alert('Ontology saved successfully!')
   }
 
-  const handleAddClass = async (classData: {
+  const handleAddClass = (classData: {
     name: string
     parentClass: string
     description: string
@@ -100,45 +70,27 @@ export function OntologyEditor({
       return
     }
 
-    try {
-      const res = await fetch(`/api/ontologies/${ontology.id}/classes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...classData,
-          namespace,
-        }),
-      })
+    const newClass = addClassToOntology(ontology.id, {
+      ...classData,
+      namespace,
+    })
 
-      if (res.ok) {
-        const newClass = await res.json()
-        setOntology({
-          ...ontology,
-          classes: [...ontology.classes, newClass],
-        })
-      }
-    } catch (error) {
-      alert('Failed to add class')
+    if (newClass) {
+      setOntology({
+        ...ontology,
+        classes: [...ontology.classes, newClass],
+      })
     }
   }
 
-  const handleDeleteClass = async (classId: string) => {
+  const handleDeleteClass = (classId: string) => {
     if (!ontology) return
 
-    try {
-      const res = await fetch(
-        `/api/ontologies/${ontology.id}/classes/${classId}`,
-        { method: 'DELETE' }
-      )
-
-      if (res.ok) {
-        setOntology({
-          ...ontology,
-          classes: ontology.classes.filter((c) => c.id !== classId),
-        })
-      }
-    } catch (error) {
-      alert('Failed to delete class')
+    if (deleteClassFromOntology(ontology.id, classId)) {
+      setOntology({
+        ...ontology,
+        classes: ontology.classes.filter((c) => c.id !== classId),
+      })
     }
   }
 
