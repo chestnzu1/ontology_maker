@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ClassForm } from './ClassForm'
 import { ClassList } from './ClassList'
 import { TurtleExport } from './TurtleExport'
+import { OntologyGraph } from './OntologyGraph'
 import {
   saveOntology,
   getOntology,
@@ -159,8 +160,8 @@ export function OntologyEditor({
         )}
       </div>
 
-      {/* Right Panel - Export */}
-      {ontology && <TurtleExport ontology={ontology} />}
+      {/* Right Panel - Graph Visualization */}
+      {ontology && <OntologyGraph ontology={ontology} />}
     </div>
   )
 }
