@@ -1,7 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { OntologyClass } from '@/lib/storage'
+
+interface ReferenceOntology {
+  id: string
+  name: string
+  uri: string
+  description: string
+}
 
 interface ClassFormProps {
   existingClasses?: OntologyClass[]
@@ -16,6 +23,48 @@ export function ClassForm({ existingClasses = [], onAddClass }: ClassFormProps) 
   const [className, setClassName] = useState('')
   const [parentClassId, setParentClassId] = useState('')
   const [description, setDescription] = useState('')
+  const [references, setReferences] = useState<ReferenceOntology[]>([])
+  const [filteredReferences, setFilteredReferences] = useState<ReferenceOntology[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [referenceSearch, setReferenceSearch] = useState('')
+
+  useEffect(() => {
+    loadReferences()
+  }, [])
+
+  const loadReferences = async () => {
+    try {
+      const res = await fetch('/api/reference-ontologies')
+      if (res.ok) {
+        const data = await res.json()
+        setReferences(data)
+        setFilteredReferences(data)
+      }
+    } catch (error) {
+      console.error('Failed to load reference ontologies:', error)
+    }
+  }
+
+  const handleReferenceSearch = (value: string) => {
+    setReferenceSearch(value)
+    if (value) {
+      const filtered = references.filter((ref) =>
+        ref.name.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredReferences(filtered)
+      setShowSuggestions(true)
+    } else {
+      setFilteredReferences(references)
+      setShowSuggestions(false)
+    }
+  }
+
+  const handleSelectReference = (ref: ReferenceOntology) => {
+    setClassName(ref.name)
+    setDescription(ref.description)
+    setReferenceSearch('')
+    setShowSuggestions(false)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,6 +83,7 @@ export function ClassForm({ existingClasses = [], onAddClass }: ClassFormProps) 
     setClassName('')
     setParentClassId('')
     setDescription('')
+    setReferenceSearch('')
   }
 
   return (
@@ -43,13 +93,32 @@ export function ClassForm({ existingClasses = [], onAddClass }: ClassFormProps) 
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Class Name</label>
-          <input
-            type="text"
-            value={className}
-            onChange={(e) => setClassName(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-            placeholder="e.g., BankAccount"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={className}
+              onChange={(e) => setClassName(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              placeholder="e.g., BankAccount or search reference ontologies"
+            />
+
+            {showSuggestions && filteredReferences.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-600 border border-slate-500 rounded-lg overflow-hidden z-10 max-h-48 overflow-y-auto">
+                {filteredReferences.map((ref) => (
+                  <button
+                    key={ref.id}
+                    type="button"
+                    onClick={() => handleSelectReference(ref)}
+                    className="w-full px-3 py-2 text-left hover:bg-slate-500 transition-colors border-b border-slate-500 last:border-b-0"
+                  >
+                    <div className="font-medium">{ref.name}</div>
+                    <div className="text-xs text-slate-300">{ref.description}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div>
