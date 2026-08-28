@@ -96,72 +96,80 @@ export function OntologyEditor({
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden">
-      {/* Left Panel - Editor */}
-      <div className="flex-1 flex flex-col overflow-hidden border-r border-slate-700">
-        <div className="p-6 border-b border-slate-700 bg-slate-800">
-          <h2 className="text-xl font-bold mb-4">
-            {ontology ? 'Edit Ontology' : 'Create New Ontology'}
-          </h2>
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Header Section */}
+      <div className="p-6 border-b border-slate-700 bg-slate-800">
+        <h2 className="text-xl font-bold mb-4">
+          {ontology ? 'Edit Ontology' : 'Create New Ontology'}
+        </h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Ontology Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-                placeholder="e.g., Financial Assets"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Namespace URI</label>
-              <input
-                type="text"
-                value={namespace}
-                onChange={(e) => setNamespace(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
-                placeholder="http://example.com/ontology#"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none h-20"
-                placeholder="Optional description..."
-              />
-            </div>
-
-            <button
-              onClick={handleSave}
-              disabled={loading}
-              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-lg font-medium transition-colors"
-            >
-              {loading ? 'Saving...' : ontology ? 'Update Ontology' : 'Create Ontology'}
-            </button>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Ontology Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              placeholder="e.g., Financial Assets"
+            />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Namespace URI</label>
+            <input
+              type="text"
+              value={namespace}
+              onChange={(e) => setNamespace(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+              placeholder="http://example.com/ontology#"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none resize-none h-20"
+              placeholder="Optional description..."
+            />
+          </div>
+
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 rounded-lg font-medium transition-colors"
+          >
+            {loading ? 'Saving...' : ontology ? 'Update Ontology' : 'Create Ontology'}
+          </button>
         </div>
-
-        {ontology && (
-          <div className="flex-1 overflow-auto p-6">
-            <ClassForm onAddClass={handleAddClass} existingClasses={ontology.classes} />
-            <div className="mt-8">
-              <ClassList
-                classes={ontology.classes}
-                onDeleteClass={handleDeleteClass}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Right Panel - Graph Visualization */}
-      {ontology && <OntologyGraph ontology={ontology} />}
+      {/* Main Content Area */}
+      {ontology ? (
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel - Editor */}
+          <div className="flex-1 flex flex-col overflow-hidden border-r border-slate-700">
+            <div className="flex-1 overflow-auto p-6">
+              <ClassForm onAddClass={handleAddClass} existingClasses={ontology.classes} />
+              <div className="mt-8">
+                <ClassList
+                  classes={ontology.classes}
+                  onDeleteClass={handleDeleteClass}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Panel - Graph Visualization */}
+          <OntologyGraph ontology={ontology} />
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-slate-400">
+          <p>Create an ontology to get started</p>
+        </div>
+      )}
     </div>
   )
 }
