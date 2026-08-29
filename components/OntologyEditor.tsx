@@ -5,6 +5,7 @@ import { ClassForm } from './ClassForm'
 import { ClassList } from './ClassList'
 import { TurtleExport } from './TurtleExport'
 import { OntologyGraph } from './OntologyGraph'
+import { OntologyHierarchy } from './OntologyHierarchy'
 import {
   saveOntology,
   getOntology,
@@ -25,7 +26,7 @@ export function OntologyEditor({
   const [namespace, setNamespace] = useState('http://example.com/finance#')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
-  const [rightPanelView, setRightPanelView] = useState<'export' | 'graph'>('export')
+  const [rightPanelView, setRightPanelView] = useState<'export' | 'graph' | 'hierarchy'>('hierarchy')
 
   useEffect(() => {
     if (ontologyId) {
@@ -167,14 +168,14 @@ export function OntologyEditor({
           {/* Tab Navigation */}
           <div className="flex border-b border-slate-700 bg-slate-800">
             <button
-              onClick={() => setRightPanelView('export')}
+              onClick={() => setRightPanelView('hierarchy')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                rightPanelView === 'export'
+                rightPanelView === 'hierarchy'
                   ? 'bg-slate-700 text-blue-400 border-b-2 border-blue-400'
                   : 'text-slate-400 hover:text-slate-300'
               }`}
             >
-              Export
+              Hierarchy
             </button>
             <button
               onClick={() => setRightPanelView('graph')}
@@ -186,12 +187,23 @@ export function OntologyEditor({
             >
               Graph
             </button>
+            <button
+              onClick={() => setRightPanelView('export')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                rightPanelView === 'export'
+                  ? 'bg-slate-700 text-blue-400 border-b-2 border-blue-400'
+                  : 'text-slate-400 hover:text-slate-300'
+              }`}
+            >
+              Export
+            </button>
           </div>
 
           {/* Tab Content */}
           <div className="flex-1 overflow-hidden">
-            {rightPanelView === 'export' && <TurtleExport ontology={ontology} />}
+            {rightPanelView === 'hierarchy' && <OntologyHierarchy ontology={ontology} />}
             {rightPanelView === 'graph' && <OntologyGraph ontology={ontology} />}
+            {rightPanelView === 'export' && <TurtleExport ontology={ontology} />}
           </div>
         </div>
       )}
